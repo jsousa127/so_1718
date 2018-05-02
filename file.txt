@@ -1,5 +1,6 @@
-l1
-l2
-l3
-l4
-l5
+Este comando lista os ficheiros:
+$ ls
+Agora podemos ordenar estes ficheiros:
+$| sort
+E escolher o primeiro:
+$| head -1
