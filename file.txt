@@ -1,6 +1,44 @@
-Este comando lista os ficheiros:
+Este comando lista os ficheiros:$ ls
 $ ls
+<<<
+0
+1
+2
+CMakeLists.txt
+README.md
+a.out
+cmake-build-debug
+fil.txt
+file.txt
+headers
+main.c
+runner.c
+struct.c
+struct.h
+utilities.c
+>>>
 Agora podemos ordenar estes ficheiros:
 $| sort
+<<<
+0
+1
+2
+CMakeLists.txt
+README.md
+a.out
+cmake-build-debug
+fil.txt
+file.txt
+headers
+main.c
+runner.c
+struct.c
+struct.h
+utilities.c
+>>>
 E escolher o primeiro:
 $| head -1
+<<<
+0
+>>>
+^<

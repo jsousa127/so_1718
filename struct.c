@@ -1,4 +1,4 @@
-#include "struct.h"
+#include "headers/struct.h"
 
 struct file {
     char* lines[128];
@@ -15,27 +15,33 @@ Struct initStruct() {
 }
 
 Struct populate(Struct s, int file) {
-    int n;
-    char buf[1024];
+    int n,flag=0;
+    char buf[2048];
     char* token;
     
-    n = read(file,buf,1024);
+    n = read(file,buf,2048);
     token = strtok(buf,"\n");
     
-    while(token != NULL)  {
-        s = addLine(s,token);
+    while(token != NULL)  {    
+        if(!strcmp(token,"<<<"))
+                flag=1;
+        if(!flag)
+                s = addLine(s,token);
+        if(!strcmp(token,">>>"))
+                flag=0;
         token = strtok(NULL, "\n");
+
     }
     
     return s;
 }
 
 Struct addLine(Struct st, char* line) {
-    char* new = malloc(sizeof(line));
+    char* new = malloc(strlen(line));
     strcpy(new,line);
     st->li++;
     st->lines[st->li] = new;
- 
+     
     if(line[0]=='$'){
             st->ii++;
             st->indexes[st->ii] = st->li;
@@ -45,22 +51,27 @@ Struct addLine(Struct st, char* line) {
 
 Struct execCommands(Struct s) {
     int n;
-    for(n=0;n<s->ii;n++) {
+printf("%d\n",s->ii);
+    for(n=0;n<=s->ii;n++) {
+         
         if(!runCommand(s->lines[s->indexes[n]],n))
             break;
-        if(n==(s->ii-1)) s->sucess = 1;
+        if(n==(s->ii)) s->sucess = 1;
     }
 
     return s;
 }
 
 void writeOutput(int file, int n) {
-    char buf[512],aux[2];
+    char buf[1024],aux[2];
     int count,path;
     sprintf(aux,"%d",n);
-    path = open(aux,O_RDONLY, 0666);
-    count = read(path,buf,512);
+    path = open(aux,O_RDONLY);
+    count = read(path,buf,1024);
+    printf("%d",count);
+    write(file,"<<<\n",4);
     write(file,buf,count);
+    write(file,">>>\n",4);
 }
 
 void writeFile(Struct s, int file) {
@@ -68,8 +79,9 @@ void writeFile(Struct s, int file) {
     while(i<=s->li){   
         write(file,s->lines[i],strlen(s->lines[i]));
         write(file,"\n",1);
-        if((n=contains(i,s->indexes,s->ii))>0)
+        if((n=contains(i,s->indexes,s->ii))>=0){
                 writeOutput(file,n);
+        }
         i++;
     }
 }

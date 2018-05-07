@@ -16,8 +16,8 @@ int getNumber(char* line) {
 
 int contains(int value, int v[],int count) {
     int i;
-    for(i=0;i<count;i++){
+    for(i=0;i<=count;i++){
         if (v[i]==value) return i;
     }
-    return 0;
+    return -1;
 }

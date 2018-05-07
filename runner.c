@@ -2,25 +2,32 @@
 
 
 int runPiped(char* input, char* cmd, char* output) {
-    int fIn,fOut;
+    int fIn,fOut,i=0;
+    char* string;
+    char* exec_args[128];
     fIn = open(input,O_RDONLY, 0666);
     fOut=open (output, O_CREAT | O_WRONLY | O_TRUNC, 0666);
     dup2(fIn,0);
     close(fIn);
     dup2(fOut,1);
     close(fOut);
-    printf("%s",cmd) ;
-    execlp(cmd,cmd,NULL);
-    return 1;
+    string = strtok(cmd," ");
+    while(string!=NULL){
+	   exec_args[i]=string;
+	   string=strtok(NULL," ");
+	   i++;
+	}
+
+	exec_args[i]=NULL;
+    execvp(exec_args[0],exec_args);
+    return 1; 
 }
 
 int runSingle(char* cmd, char* filename) {
     int fd;
-
     fd=open (filename, O_CREAT | O_WRONLY | O_TRUNC, 0666);
     dup2(fd,1); 
 	close(fd);
-
     execlp(cmd,cmd,NULL);
     return 1;
 }
@@ -34,17 +41,17 @@ bool runCommand(char* line,int cmdNumber){
     printf("%s",line+2);
     if(!fork()){
         if(startsWith("$|",line)) {
-                
+             /*   
                 if(line[2]!=' '){
                         token=strtok(line+2,"");
-                        write(1,token,23);
                         n = getNumber(line+2);
                         if(n>9) sum = 5;
                     else sum = 4; 
                 }
-                sprintf(cmdPipe, "%d", cmdNumber-n);
-                
-                ret = runPiped(cmdPipe,line+sum,cmd);
+               */ 
+                sprintf(cmdPipe, "%d", cmdNumber-1);
+               
+                ret = runPiped(cmdPipe,line+3,cmd);
         }
         else ret = runSingle(line+2,cmd);
         _exit(ret);
