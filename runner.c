@@ -1,68 +1,84 @@
- #include "headers/runner.h"
+#include "headers/runner.h"
 
-
-int runPiped(char* input, char* cmd, char* output) {
-    int fIn,fOut,i=0;
-    char* string;
-    char* exec_args[128];
-    fIn = open(input,O_RDONLY, 0666);
-    fOut=open (output, O_CREAT | O_WRONLY | O_TRUNC, 0666);
-    dup2(fIn,0);
-    close(fIn);
-    dup2(fOut,1);
-    close(fOut);
-    string = strtok(cmd," ");
-    while(string!=NULL){
-	   exec_args[i]=string;
-	   string=strtok(NULL," ");
-	   i++;
-	}
-
-	exec_args[i]=NULL;
-    execvp(exec_args[0],exec_args);
-    return 1; 
-}
-
-int runSingle(char* cmd, char* filename) {
-    int fd;
-    fd=open (filename, O_CREAT | O_WRONLY | O_TRUNC, 0666);
-    dup2(fd,1); 
-	close(fd);
-    execlp(cmd,cmd,NULL);
-    return 1;
-}
-
-bool runCommand(char* line,int cmdNumber){
-    char cmd[3];
-    char cmdPipe[3];
-    char* token;
-    int status,ret = 0, n = 1,sum=3;
-    sprintf(cmd,"%d",cmdNumber);
-    printf("%s",line+2);
-    if(!fork()){
-        if(startsWith("$|",line)) {
-             /*   
-                if(line[2]!=' '){
-                        token=strtok(line+2,"");
-                        n = getNumber(line+2);
-                        if(n>9) sum = 5;
-                    else sum = 4; 
-                }
-               */ 
-                sprintf(cmdPipe, "%d", cmdNumber-1);
-               
-                ret = runPiped(cmdPipe,line+3,cmd);
+//Executa comando simples
+char* runSingle(char* cmd) {
+        int status,i=0,n=1;
+        char* token,* out,*aux;
+        char* exec_args[16];
+        char buffer[10000];
+        int pp[2];
+        pipe(pp);
+        aux = cmd;
+        token = strtok(aux," ");
+        while(token!=NULL){
+                exec_args[i]=token;
+                token=strtok(NULL," ");
+                i++;
         }
-        else ret = runSingle(line+2,cmd);
-        _exit(ret);
-    }
-    else {
-        wait(&status);
-        if (WIFEXITED(status)) 
-                ret=WEXITSTATUS(status);
-    }
-    return ret == 1 ? false : true;
+        exec_args[i]=NULL;
+
+        if(!fork()){
+                close(pp[0]);
+                dup2(pp[1],1); 
+                execvp(exec_args[0],exec_args);
+                _exit(1);
+        }
+        else{
+                wait(&status);
+                close(pp[1]);
+                n = read(pp[0],buffer,10000);
+                buffer[n]='\0';
+                out = malloc(n+1);
+                strcpy(out,buffer);
+
+                return out;
+        }
 }
+
+//Executa comando composto
+char* runPiped(char* input, char* cmd) {
+        int status,i=0,n=1;
+        char* string,*out,buffer[10000];
+        char* exec_args[128],*aux;
+        int ppIn[2], ppOut[2];
+        pipe(ppIn);
+        pipe(ppOut);
+        aux = cmd;
+        string = strtok(aux," ");
+
+        while(string!=NULL) {
+                exec_args[i]=string;
+                string=strtok(NULL," ");
+                i++;
+        }
+        exec_args[i]=NULL;
+
+
+        if(!fork()) {
+                close(ppIn[1]);
+                dup2(ppIn[0],0);
+                close(ppOut[0]);
+                dup2(ppOut[1],1);
+
+                execvp(exec_args[0],exec_args);
+                perror("Erro ao executar");
+                _exit(1);
+        }
+        else {
+                close(ppIn[0]);
+                write(ppIn[1], input, strlen(input));
+                close(ppIn[1]);
+                wait(&status);
+                close(ppOut[1]);
+                n=read(ppOut[0],buffer,10000);
+                buffer[n]='\0';
+                out = malloc(n+1);
+                strcpy(out,buffer);
+                        return out;
+        } 
+}   
+
+
 
 
 

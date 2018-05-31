@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/wait.h>
+#include <sys/wait.h>   
+#include "struct.h"
 
-char* runSingle(char* cmd);
-char* runPiped(char* input, char* cmd);
+Struct parseFile(char* file_path, Struct s);

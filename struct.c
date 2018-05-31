@@ -1,98 +1,135 @@
 #include "headers/struct.h"
 
+//Estrutura que armazena um comando, o seu comentário e o seu output
+typedef struct command {
+        char* comment;
+        char* cmd;
+        char* output;
+} *Command; 
+
+//Estrutura que armazena todos os nosso comandos
 struct file {
-    char* lines[128];
-    int indexes[128];
-    int li,ii,sucess;
+        Command comands[128];
+        int size;
+        int sucess;
 };
 
+//Iniciar estrutura file
 Struct initStruct() {
-    Struct st = malloc(sizeof(struct file));
-    st->li = -1;
-    st->ii = -1;
-    st->sucess = 0;
-    return st;  
+        Struct st = malloc(sizeof(struct file));
+        st->size = 0;
+        st->sucess = 0;
+        return st;  
 }
 
-Struct populate(Struct s, int file) {
-    int n,flag=0;
-    char buf[2048];
-    char* token;
-    
-    n = read(file,buf,2048);
-    token = strtok(buf,"\n");
-    
-    while(token != NULL)  {    
-        if(!strcmp(token,"<<<"))
-                flag=1;
-        if(!flag)
-                s = addLine(s,token);
-        if(!strcmp(token,">>>"))
-                flag=0;
-        token = strtok(NULL, "\n");
+//Adicionar comando à estrutura
+Struct addCommand(char* comment,char* command,Struct st) {
+        Command c = malloc(sizeof(struct command));
+        c->comment = strdup(comment);
+        c->cmd = strdup(command);
+        c->output = NULL;
+        st->comands[st->size] = c;
+        st->size++;
 
-    }
-    
-    return s;
+        return st;
 }
 
-Struct addLine(Struct st, char* line) {
-    char* new = malloc(strlen(line));
-    strcpy(new,line);
-    st->li++;
-    st->lines[st->li] = new;
-     
-    if(line[0]=='$'){
-            st->ii++;
-            st->indexes[st->ii] = st->li;
-    }
-    return st;
+// Atribuir output a um comando
+void setOutput(Command c, char* output) {
+        c->output = strdup(output);
 }
 
-Struct execCommands(Struct s) {
-    int n;
-printf("%d\n",s->ii);
-    for(n=0;n<=s->ii;n++) {
-         
-        if(!runCommand(s->lines[s->indexes[n]],n))
-            break;
-        if(n==(s->ii)) s->sucess = 1;
-    }
-
-    return s;
+// Devolve o output de um comando
+char* getOutput(Struct s, int cmdNumber) {
+        Command c = s->comands[cmdNumber];
+        return c->output;
 }
 
-void writeOutput(int file, int n) {
-    char buf[1024],aux[2];
-    int count,path;
-    sprintf(aux,"%d",n);
-    path = open(aux,O_RDONLY);
-    count = read(path,buf,1024);
-    printf("%d",count);
-    write(file,"<<<\n",4);
-    write(file,buf,count);
-    write(file,">>>\n",4);
-}
+// Executar um comando
+void runCommand(Struct s,int cmdNumber){
+        char* out;
+        int n = 1, sum = 3;
+        Command c = s->comands[cmdNumber];
+        char* cmd = malloc(strlen(c->cmd));
+        strcpy(cmd,c->cmd);
+        if(startsWith("$|",cmd)) {
 
-void writeFile(Struct s, int file) {
-    int i=0,n;
-    while(i<=s->li){   
-        write(file,s->lines[i],strlen(s->lines[i]));
-        write(file,"\n",1);
-        if((n=contains(i,s->indexes,s->ii))>=0){
-                writeOutput(file,n);
+                if(cmd[2]!=' '){
+                        n = getNumber(cmd+2);
+                        if(n>9) sum = 5;
+                        else sum = 4;
+                }
+
+                char* in = getOutput(s,cmdNumber-n);
+
+                out = runPiped(in,cmd+sum);
         }
-        i++;
-    }
+        else out = runSingle(cmd+2);
+        setOutput(c,out);
+        return;
 }
 
+//Execução da lista de comandos
+Struct execCommands(Struct s) {
+        int n;
+
+        for(n=0;n<s->size;n++) {
+                runCommand(s,n);
+                if(n==(s->size)-1) s->sucess = 1;
+        }
+
+        return s;
+}
+
+//Escrever comentário no ficheiro
+void writeComment(Command c, int file) {
+        if(c->comment[0]=='\n') c->comment=c->comment +1;
+        write(file,c->comment,strlen(c->comment));
+}
+
+//Escrever comando no ficheiro
+void writeCommand(Command c, int file) {
+        write(file,c->cmd,strlen(c->cmd));
+}
+
+//Escrever output no ficheiro
+void writeOutput(Command c, int file) {
+        if(c->output){
+                write(file,"\n<<<\n",5);
+                write(file,c->output,strlen(c->output));
+                write(file,">>>\n",4);
+        }
+}
+
+//Escrever estrutura no ficheiro
+void writeFile(Struct s, int file) {
+        int i=0;
+        Command c;
+        while(i<s->size){
+                c = s->comands[i];
+                c->cmd = c->cmd;
+                writeComment(c,file);
+                writeCommand(c,file);
+                writeOutput(c,file);
+                i++;
+        }
+}
+
+//Libertar memória da estrutura
+void cleanUp(Struct s) {
+        int i;
+        Command c;
+        for(i=0;i<s->size;i++) {
+                c = s->comands[i];
+                free(c->cmd);
+                if(c->output) free(c->output);
+                free(c);    
+        }
+}
+
+// Verificar se a execução dos comandos foi bem sucedida
 int execSucess(Struct s) {
-    return s->sucess;
+        return s->sucess;
 }
 
-void printStruct(Struct st) {
-    int i;    
-    for(i=0;i<=st->li;i++){
-        printf("%s\n",st->lines[i]);
-    }
-}
+

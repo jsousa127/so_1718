@@ -4,22 +4,22 @@
 #include <stdlib.h>
 #include <string.h>
 #include "headers/struct.h"
-
+#include "headers/parser.h"
 
 int main(int argc, char* argv[]) {
     int file;
-    char* line;
-    Struct s = initStruct();
-    file=open(argv[1], O_RDONLY, 0666);
-    s = populate(s,file);
-    close(file); 
-    s = execCommands(s);
-    if (execSucess(s)) {
+
+    Struct s = initStruct(); // Iniciar a estrutura de dados
+    parseFile(argv[1],s); // Parse do ficheiro txt para a estrutura
+    s = execCommands(s); // Execução dos comandos
+    
+    if (execSucess(s)) { // Escrita no ficheiro, caso a execução tenha sido bem sucedida.
             file=open(argv[1],O_WRONLY | O_TRUNC, 0666);
             writeFile(s,file);
             close(file);
     }
     else write (1,"Erro na execução dos comandos\n",32);
-            
+    
+    cleanUp(s); // Limpeza da memória utilizada
     return 0;
 }

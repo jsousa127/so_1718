@@ -5,14 +5,14 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include "runner.h"
+#include "utilities.h"
 
 typedef struct file *Struct;
 
-Struct addLine(Struct st, char* line);
+Struct addCommand(char* comment,char* command,Struct st);
 Struct initStruct();
-Struct populate(Struct s, int file);
+void cleanUp(Struct s);
 void writeFile(Struct s,int file);
-char ** getLines(Struct s);
 Struct execCommands(Struct s);
 int execSucess(Struct st);
-void printStruct(Struct st);
+void printStruct(Struct s);
