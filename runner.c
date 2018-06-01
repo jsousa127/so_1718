@@ -2,11 +2,11 @@
 
 //Executa comando simples
 char* runSingle(char* cmd) {
-        int status,i=0,n=1;
-        char* token,* out,*aux;
+        int status,i=0,n=1,sizeOut=0;
+        char* token,* out,*aux,*str;
         char* exec_args[16];
-        char buffer[10000];
-        int pp[2];
+        char buffer[128];
+        int pp[2],it=1;
         pipe(pp);
         aux = cmd;
         token = strtok(aux," ");
@@ -26,10 +26,20 @@ char* runSingle(char* cmd) {
         else{
                 wait(&status);
                 close(pp[1]);
-                n = read(pp[0],buffer,10000);
+                n = read(pp[0],buffer,128);
                 buffer[n]='\0';
                 out = malloc(n+1);
                 strcpy(out,buffer);
+                if(n == 128) {
+                    while(it) {
+                        n = read(pp[0],buffer,128);
+                        if(n == 0) break;
+                        buffer[n] = '\0';
+                        sprintf(out,"%s%s",out,buffer);
+                    }
+                }
+
+                //out[sizeOut] = '\0';
 
                 return out;
         }
@@ -38,7 +48,7 @@ char* runSingle(char* cmd) {
 //Executa comando composto
 char* runPiped(char* input, char* cmd) {
         int status,i=0,n=1;
-        char* string,*out,buffer[10000];
+        char* string,*out,buffer[128];
         char* exec_args[128],*aux;
         int ppIn[2], ppOut[2];
         pipe(ppIn);
@@ -70,10 +80,18 @@ char* runPiped(char* input, char* cmd) {
                 close(ppIn[1]);
                 wait(&status);
                 close(ppOut[1]);
-                n=read(ppOut[0],buffer,10000);
+                n = read(ppOut[0],buffer,128);
                 buffer[n]='\0';
                 out = malloc(n+1);
                 strcpy(out,buffer);
+                if(n == 128) {
+                    while(n) {
+                        n = read(ppOut[0],buffer,128);
+                        if(n == 0) break;
+                        buffer[n] = '\0';
+                        sprintf(out,"%s%s",out,buffer);
+                    }
+                }
                         return out;
         } 
 }   

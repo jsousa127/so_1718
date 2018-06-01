@@ -1,24 +1,63 @@
 Este comando lista os ficheiros:
-$ ls -l
+$ cat main.c
 <<<
-total 88
--rw-r--r--  1 josesousa  staff    131 Apr 27 21:42 README.md
--rwxr-xr-x  1 josesousa  staff  14324 May 31 21:32 a.out
--rw-r--r--  1 josesousa  staff   1434 May 31 21:27 file.txt
-drwxr-xr-x  6 josesousa  staff    192 May 31 21:32 headers
--rw-r--r--@ 1 josesousa  staff    731 May 31 21:30 main.c
--rw-r--r--@ 1 josesousa  staff   2665 May 31 21:07 parser.c
--rw-r--r--  1 josesousa  staff   1988 May 31 21:04 runner.c
--rw-r--r--  1 josesousa  staff   2717 May 31 21:27 struct.c
--rw-r--r--  1 josesousa  staff    445 May 31 21:32 utilities.c
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
+#include "headers/struct.h"
+#include "headers/parser.h"
+
+int main(int argc, char* argv[]) {
+    int file;
+
+    Struct s = initStruct(); // Iniciar a estrutura de dados
+    parseFile(argv[1],s); // Parse do ficheiro txt para a estrutura
+    s = execCommands(s); // Execução dos comandos
+    
+    if (execSucess(s)) { // Escrita no ficheiro, caso a execução tenha sido bem sucedida.
+            file=open(argv[1],O_WRONLY | O_TRUNC, 0666);
+            writeFile(s,file);
+            close(file);
+    }
+    else write (1,"Erro na execução dos comandos\n",32);
+    
+    cleanUp(s); // Limpeza da memória utilizada
+    return 0;
+}
 >>>
 Bota ordenar:
-$| wc
+$| sort
 <<<
-      10      83     547
+
+
+    
+    
+            close(file);
+            file=open(argv[1],O_WRONLY | O_TRUNC, 0666);
+            writeFile(s,file);
+    Struct s = initStruct(); // Iniciar a estrutura de dados
+    cleanUp(s); // Limpeza da memória utilizada
+    else write (1,"Erro na execução dos comandos\n",32);
+    if (execSucess(s)) { // Escrita no ficheiro, caso a execução tenha sido bem sucedida.
+    int file;
+    parseFile(argv[1],s); // Parse do ficheiro txt para a estrutura
+    return 0;
+    s = execCommands(s); // Execução dos comandos
+    }
+#include "headers/parser.h"
+#include "headers/struct.h"
+#include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+int main(int argc, char* argv[]) {
+}
 >>>
 E sacar o primeiro:
 $|2 wc
 <<<
-      10      83     547
+      25      85     731
 >>>

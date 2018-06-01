@@ -1,7 +1,7 @@
 #include "headers/parser.h"  
 
 Struct parseFile(char* file_path, Struct s) {
-        char buffer[128];
+        char buffer[128],ant = '>';
         int file=open(file_path, O_RDONLY, 0666);
         int n = 1, i = 0;
         int w1 = 1, w2 = 0;
@@ -54,14 +54,17 @@ Struct parseFile(char* file_path, Struct s) {
                         i = 0;
                         continue;
                 }
-                if(buffer[i] == '<'){
+                
+                if(buffer[i] == '<' && menores<3){ 
                         i++;
                         menores++;
                         continue;
                 }
                 if(menores == 3 && maiores < 3) {
                         if(buffer[i] == '>') maiores++;
-                        i++;
+                        if(buffer[i] != '>' && maiores > 0) maiores--;
+
+                        i++; 
                         continue;
 
                 }               		

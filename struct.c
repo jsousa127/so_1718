@@ -9,8 +9,9 @@ typedef struct command {
 
 //Estrutura que armazena todos os nosso comandos
 struct file {
-        Command comands[128];
+        Command* comands;
         int size;
+        int sizeT;
         int sucess;
 };
 
@@ -18,7 +19,10 @@ struct file {
 Struct initStruct() {
         Struct st = malloc(sizeof(struct file));
         st->size = 0;
+        st->sizeT = 128;
         st->sucess = 0;
+        st->comands = malloc(st->sizeT);
+
         return st;  
 }
 
@@ -30,7 +34,10 @@ Struct addCommand(char* comment,char* command,Struct st) {
         c->output = NULL;
         st->comands[st->size] = c;
         st->size++;
-
+        if (st->size == st->sizeT - 1) {
+                st->sizeT *= 2;
+                st->comands = realloc(st->comands, st->sizeT);
+        }
         return st;
 }
 
