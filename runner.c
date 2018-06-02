@@ -2,8 +2,8 @@
 
 //Executa comando simples
 char* runSingle(char* cmd) {
-        int status,i=0,n=1,sizeOut=0;
-        char* token,* out,*aux,*str;
+        int status,i=0,n=1;
+        char* token,*out,*aux;
         char* exec_args[16];
         char buffer[128];
         int pp[2],it=1;
@@ -21,28 +21,33 @@ char* runSingle(char* cmd) {
                 close(pp[0]);
                 dup2(pp[1],1); 
                 execvp(exec_args[0],exec_args);
+                perror("Erro ao executar");
                 _exit(1);
         }
         else{
                 wait(&status);
+                if (WIFEXITED(status)) {
+                        if (WEXITSTATUS(status) == 1) return NULL;
+                }
+        
+
                 close(pp[1]);
-                n = read(pp[0],buffer,128);
+                n = read(pp[0],buffer,127);
                 buffer[n]='\0';
                 out = malloc(n+1);
-                strcpy(out,buffer);
-                if(n == 128) {
-                    while(it) {
-                        n = read(pp[0],buffer,128);
-                        if(n == 0) break;
-                        buffer[n] = '\0';
-                        sprintf(out,"%s%s",out,buffer);
-                    }
+                strncpy(out,buffer,n);
+                if(n == 127) {
+                        while(it) {
+                                n = read(pp[0],buffer,127);
+                                if(n == 0) break;
+                                buffer[n] = '\0';
+                                sprintf(out,"%s%s",out,buffer);
+                        }
                 }
-
-                //out[sizeOut] = '\0';
 
                 return out;
         }
+        
 }
 
 //Executa comando composto
@@ -79,20 +84,25 @@ char* runPiped(char* input, char* cmd) {
                 write(ppIn[1], input, strlen(input));
                 close(ppIn[1]);
                 wait(&status);
+                
+                if (WIFEXITED(status)) {
+                        if (WEXITSTATUS(status) == 1) return NULL;
+                }
+
                 close(ppOut[1]);
                 n = read(ppOut[0],buffer,128);
                 buffer[n]='\0';
                 out = malloc(n+1);
                 strcpy(out,buffer);
                 if(n == 128) {
-                    while(n) {
-                        n = read(ppOut[0],buffer,128);
-                        if(n == 0) break;
-                        buffer[n] = '\0';
-                        sprintf(out,"%s%s",out,buffer);
-                    }
+                        while(n) {
+                                n = read(ppOut[0],buffer,128);
+                                if(n == 0) break;
+                                buffer[n] = '\0';
+                                sprintf(out,"%s%s",out,buffer);
+                        }
                 }
-                        return out;
+                return out;
         } 
 }   
 

@@ -1,16 +1,24 @@
 #include "headers/parser.h"  
 
+#define buf_size 1024
+
 Struct parseFile(char* file_path, Struct s) {
-        char buffer[128],ant = '>';
+        char buffer[buf_size];
         int file=open(file_path, O_RDONLY, 0666);
         int n = 1, i = 0;
         int w1 = 1, w2 = 0;
         int cm = 0, cmd = 0;
         int menores = 0, maiores = 0;
-        char comment[512],command[128];
+        char comment[buf_size],command[buf_size];
         while(n!=0) {
-                if(i == 0) n = read(file,buffer,128);
-                if(n==0) break;
+                if(i == 0) n = read(file,buffer,buf_size);
+                if(n==0){ 
+                        if(w2 == 1) {
+                                command[cmd]='\0';
+                                s = addCommand(comment,command,s);
+                        }
+                        break;
+                }
                 if (w1 == 1){
                         while(1) {
                                 comment[cm]=buffer[i];
@@ -41,12 +49,13 @@ Struct parseFile(char* file_path, Struct s) {
                                 }    
                                 if (buffer[i]=='\n') {
                                         command[cmd]='\0';
+                                        s = addCommand(comment,command,s);
                                         cmd = 0;
                                         w2=0;
                                         break;
                                 }
-                        }
-
+                        
+                        }       
                         if (w2 == 1) continue;
                         else i++;
                 }
@@ -55,20 +64,19 @@ Struct parseFile(char* file_path, Struct s) {
                         continue;
                 }
                 
-                if(buffer[i] == '<' && menores<3){ 
+                if(buffer[i] == '>' && maiores<3){ 
                         i++;
-                        menores++;
+                        maiores++;
                         continue;
                 }
-                if(menores == 3 && maiores < 3) {
-                        if(buffer[i] == '>') maiores++;
-                        if(buffer[i] != '>' && maiores > 0) maiores--;
+                if(maiores == 3 && menores < 3) {
+                        if(buffer[i] == '<') menores++;
+                        if(buffer[i] != '<' && menores > 0) menores--;
 
                         i++; 
                         continue;
 
                 }               		
-                s = addCommand(comment,command,s);
                 w1 = 1;
                 menores = 0;
                 maiores = 0;

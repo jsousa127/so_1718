@@ -1,63 +1,41 @@
-Este comando lista os ficheiros:
-$ cat main.c
-<<<
-#include <stdio.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <string.h>
-#include "headers/struct.h"
-#include "headers/parser.h"
-
-int main(int argc, char* argv[]) {
-    int file;
-
-    Struct s = initStruct(); // Iniciar a estrutura de dados
-    parseFile(argv[1],s); // Parse do ficheiro txt para a estrutura
-    s = execCommands(s); // Execução dos comandos
-    
-    if (execSucess(s)) { // Escrita no ficheiro, caso a execução tenha sido bem sucedida.
-            file=open(argv[1],O_WRONLY | O_TRUNC, 0666);
-            writeFile(s,file);
-            close(file);
-    }
-    else write (1,"Erro na execução dos comandos\n",32);
-    
-    cleanUp(s); // Limpeza da memória utilizada
-    return 0;
-}
+adasdsadas:
+$ ls
 >>>
-Bota ordenar:
+Makefile
+README.md
+exemplo.nb
+file.txt
+file2.txt
+headers
+main.c
+obj
+parser.c
+program
+program.dSYM
+runner.c
+struct.c
+utilities.c
+<<<
+sasda:
 $| sort
-<<<
-
-
-    
-    
-            close(file);
-            file=open(argv[1],O_WRONLY | O_TRUNC, 0666);
-            writeFile(s,file);
-    Struct s = initStruct(); // Iniciar a estrutura de dados
-    cleanUp(s); // Limpeza da memória utilizada
-    else write (1,"Erro na execução dos comandos\n",32);
-    if (execSucess(s)) { // Escrita no ficheiro, caso a execução tenha sido bem sucedida.
-    int file;
-    parseFile(argv[1],s); // Parse do ficheiro txt para a estrutura
-    return 0;
-    s = execCommands(s); // Execução dos comandos
-    }
-#include "headers/parser.h"
-#include "headers/struct.h"
-#include <fcntl.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-int main(int argc, char* argv[]) {
-}
 >>>
-E sacar o primeiro:
-$|2 wc
+Makefile
+README.md
+exemplo.nb
+file.txt
+file2.txt
+headers
+main.c
+obj
+parser.c
+program
+program.dSYM
+runner.c
+struct.c
+utilities.c
 <<<
-      25      85     731
+sdasda:
+$2| wc
 >>>
+      14      14     128
+<<<

@@ -12,7 +12,6 @@ struct file {
         Command* comands;
         int size;
         int sizeT;
-        int sucess;
 };
 
 //Iniciar estrutura file
@@ -20,7 +19,6 @@ Struct initStruct() {
         Struct st = malloc(sizeof(struct file));
         st->size = 0;
         st->sizeT = 128;
-        st->sucess = 0;
         st->comands = malloc(st->sizeT);
 
         return st;  
@@ -53,27 +51,26 @@ char* getOutput(Struct s, int cmdNumber) {
 }
 
 // Executar um comando
-void runCommand(Struct s,int cmdNumber){
+int runCommand(Struct s,int cmdNumber){
         char* out;
         int n = 1, sum = 3;
         Command c = s->comands[cmdNumber];
-        char* cmd = malloc(strlen(c->cmd));
-        strcpy(cmd,c->cmd);
-        if(startsWith("$|",cmd)) {
-
-                if(cmd[2]!=' '){
-                        n = getNumber(cmd+2);
+        char* cmd = strdup(c->cmd);
+        
+        if(startsWith("$ ",cmd)) 
+                out = runSingle(cmd+2);
+        else {
+                if(cmd[1]!='|') {        
+                        n = getNumber(cmd+1);
                         if(n>9) sum = 5;
                         else sum = 4;
                 }
-
                 char* in = getOutput(s,cmdNumber-n);
-
                 out = runPiped(in,cmd+sum);
         }
-        else out = runSingle(cmd+2);
+        if(out == NULL) return 0;
         setOutput(c,out);
-        return;
+        return 1;
 }
 
 //Execução da lista de comandos
@@ -81,10 +78,11 @@ Struct execCommands(Struct s) {
         int n;
 
         for(n=0;n<s->size;n++) {
-                runCommand(s,n);
-                if(n==(s->size)-1) s->sucess = 1;
+                if (!runCommand(s,n)) {
+                        cleanUp(s);
+                        return NULL;
+                }
         }
-
         return s;
 }
 
@@ -102,9 +100,9 @@ void writeCommand(Command c, int file) {
 //Escrever output no ficheiro
 void writeOutput(Command c, int file) {
         if(c->output){
-                write(file,"\n<<<\n",5);
+                write(file,"\n>>>\n",5);
                 write(file,c->output,strlen(c->output));
-                write(file,">>>\n",4);
+                write(file,"<<<\n",4);
         }
 }
 
@@ -134,9 +132,5 @@ void cleanUp(Struct s) {
         }
 }
 
-// Verificar se a execução dos comandos foi bem sucedida
-int execSucess(Struct s) {
-        return s->sucess;
-}
 
 

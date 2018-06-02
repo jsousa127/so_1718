@@ -13,7 +13,10 @@ int startsWith(const char *pre, const char *str)
 int getNumber(char* line) { 
     char aux[2];    
     strncpy(aux,line,2);
-    //write(1,aux,2);
+    if(aux[1] == '|') {
+    	aux[1] = '\0';
+    }
+    
     return atoi(aux);
 }
 
