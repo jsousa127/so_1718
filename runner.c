@@ -3,13 +3,23 @@
 //Executa comando simples
 char* runSingle(char* cmd) {
         int status,i=0,n=1;
-        char* token,*out,*aux;
+        char* token,*out,*command,*pipeCase,*pipeInput;
         char* exec_args[16];
         char buffer[128];
         int pp[2],it=1;
         pipe(pp);
-        aux = cmd;
-        token = strtok(aux," ");
+        
+        command = cmd;
+        pipeCase = strstr(command,"|");
+
+        if (pipeCase) {
+                command[pipeCase-command] = '\0';
+                pipeInput = runSingle(command);
+                return runPiped(pipeInput,pipeCase+2);
+
+        }
+
+        token = strtok(command," ");
         while(token!=NULL){
                 exec_args[i]=token;
                 token=strtok(NULL," ");
@@ -53,14 +63,22 @@ char* runSingle(char* cmd) {
 //Executa comando composto
 char* runPiped(char* input, char* cmd) {
         int status,i=0,n=1;
-        char* string,*out,buffer[128];
-        char* exec_args[128],*aux;
+        char* string,*out,*command,*pipeCase,*pipeInput;
+        char* exec_args[128],buffer[128];
         int ppIn[2], ppOut[2];
         pipe(ppIn);
         pipe(ppOut);
-        aux = cmd;
-        string = strtok(aux," ");
+        
+        command = cmd;
+        pipeCase = strstr(command,"|");
+        if (pipeCase) {
+                command[pipeCase-command] = '\0';
+                pipeInput = runPiped(input,command);
+                return runPiped(pipeInput,pipeCase+2);
 
+        }
+
+        string = strtok(command," ");
         while(string!=NULL) {
                 exec_args[i]=string;
                 string=strtok(NULL," ");

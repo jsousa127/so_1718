@@ -5,7 +5,7 @@ OBJ_FILES := $(patsubst ./%.c, obj/%.o, $(wildcard ./*.c))
 CFLAGS = -Wall -std=c11 -g
 
 program: setup $(OBJ_FILES)
-	$(CC) $(CFLAGS) -o program  $(OBJ_FILES)
+	$(CC) $(CFLAGS) -o notebook  $(OBJ_FILES)
 
 setup:
 	mkdir -p obj
@@ -25,6 +25,6 @@ obj/utilities.o: headers/utilities.h
 
 clean:
 	-@rm -rf obj
-	-@rm program
+	-@rm notebook
 
 
